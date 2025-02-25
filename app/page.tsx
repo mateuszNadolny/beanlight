@@ -1,3 +1,9 @@
+import SmoothScrollHero from "@/components/hero/hero";
+
 export default function Home() {
-  return <main></main>;
+  return (
+    <main>
+      <SmoothScrollHero />
+    </main>
+  );
 }

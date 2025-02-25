@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import { Hedvig_Letters_Serif, Be_Vietnam_Pro } from "next/font/google";
+import { FlyoutNav } from "@/components/global/navbar";
 import "./globals.css";
 
 const hedvigLettersSerif = Hedvig_Letters_Serif({
-  variable: "--font-hedvig-letters-serif",
+  variable: "--hedvig-letters-serif",
   subsets: ["latin"],
   weight: ["400"],
 });
 
 const beVietnamPro = Be_Vietnam_Pro({
-  variable: "--font-be-vietnam-pro",
+  variable: "--be-vietnam-pro",
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body
         className={`${hedvigLettersSerif.variable} ${beVietnamPro.variable} antialiased`}
       >
+        <FlyoutNav />
         {children}
       </body>
     </html>
