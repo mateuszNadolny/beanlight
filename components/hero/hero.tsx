@@ -1,8 +1,11 @@
 "use client";
 
 import React from "react";
+
+import { useParallaxItems } from "@/hooks/useParallaxItems";
+
 import { ReactLenis } from "lenis/react";
-import { motion, useTransform, useScroll } from "framer-motion";
+import { motion, useTransform, useScroll, MotionValue } from "framer-motion";
 import { IoIosArrowRoundDown } from "react-icons/io";
 import { FaArrowRightLong } from "react-icons/fa6";
 import { GiCoffeeBeans } from "react-icons/gi";
@@ -18,7 +21,7 @@ const SmoothScrollHero = () => {
           // Learn more -> https://github.com/darkroomengineering/lenis?tab=readme-ov-file#instance-settings
           lerp: 0.05,
           //   infinite: true,
-          //   syncTouch: true,
+          syncTouch: true,
         }}
       >
         <Hero />
@@ -41,11 +44,37 @@ const Hero = () => {
   );
 };
 
+// Reusable component for wrapper animations
+const AnimatedContainer = ({
+  children,
+  className = "",
+  width,
+  height,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+  width?: MotionValue<string>;
+  height?: MotionValue<string>;
+}) => {
+  return (
+    <motion.div
+      className={`absolute h-[80vh] rounded-xl left-1/2 transform -translate-x-1/2 ${className}`}
+      style={{ width, height }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
 const Wrapper = () => {
   const { scrollY } = useScroll();
 
+  // animations for the container
+  const width = useTransform(scrollY, [0, SECTION_HEIGHT], ["30%", "100%"]);
+  const height = useTransform(scrollY, [0, SECTION_HEIGHT], ["75vh", "80vh"]);
+
   // animations for the title
-  const y = useTransform(scrollY, [0, SECTION_HEIGHT], [-100, 0]);
+  const titleY = useTransform(scrollY, [0, SECTION_HEIGHT], [-100, 0]);
   const fontSize = useTransform(scrollY, [0, SECTION_HEIGHT], ["4rem", "8rem"]);
   const textShadow = useTransform(
     scrollY,
@@ -53,66 +82,59 @@ const Wrapper = () => {
     ["0px 0px 0px 0px rgba(0, 0, 0, 0)", "0px 0px 10px 0px rgba(0, 0, 0, 0.5)"]
   );
 
-  // animations for the wrapper
-  const width = useTransform(scrollY, [0, SECTION_HEIGHT], ["30%", "100%"]);
-  const height = useTransform(scrollY, [0, SECTION_HEIGHT], ["75vh", "80vh"]);
+  // animations for the center image
+  const imageY = useTransform(
+    scrollY,
+    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT],
+    [-10, 0]
+  );
+
+  // animations for the arrow down
+  const opacity = useTransform(
+    scrollY,
+    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT * 0.8],
+    [1, 0]
+  );
 
   return (
-    <div className="relative w-full h-[80vh] rounded-xl sticky top-24 z-10 flex items-start pt-4 justify-center">
-      <motion.div
-        className="absolute h-[80vh] rounded-xl z-10 bg-beanlight-900 left-1/2 transform -translate-x-1/2"
-        style={{
-          width,
-          height,
-        }}
+    <div className="relative w-full h-[80vh] rounded-xl sticky top-24 z-10 flex flex-col items-center justify-start pt-4">
+      <AnimatedContainer
+        className="z-10 bg-beanlight-900"
+        width={width}
+        height={height}
       />
-      <motion.div
-        className="absolute h-[80vh] rounded-xl z-20 bg-[radial-gradient(ellipse_at_50%_75%,theme(colors.beanlight.200),theme(colors.beanlight.400),theme(colors.beanlight.900))] opacity-40 left-1/2 transform -translate-x-1/2"
-        style={{
-          width,
-          height,
-        }}
+      <AnimatedContainer
+        className="z-20 bg-[radial-gradient(ellipse_at_50%_75%,theme(colors.beanlight.200),theme(colors.beanlight.400),theme(colors.beanlight.900))] opacity-40"
+        width={width}
+        height={height}
       />
-      <motion.div
-        className="absolute h-[80vh] rounded-xl z-20 bg-geometric-pattern bg-repeat bg-center opacity-40 left-1/2 transform -translate-x-1/2"
-        style={{
-          width,
-          height,
-        }}
+      <AnimatedContainer
+        className="z-20 bg-geometric-pattern bg-repeat bg-center opacity-40"
+        width={width}
+        height={height}
       />
+
       <motion.h1
         className="font-hedvig text-[#E2EAE1] tracking-tight z-30 font-[400]"
-        style={{
-          y,
-          fontSize,
-          textShadow,
-        }}
+        style={{ y: titleY, fontSize, textShadow }}
       >
         Brewed to perfection
       </motion.h1>
 
-      <CenterImage />
+      <CenterImage imageY={imageY} />
       <ParallaxSectionLeft />
       <ParallaxSectionRight />
-      <ArrowDown />
+      <ArrowDown opacity={opacity} />
     </div>
   );
 };
 
-const CenterImage = () => {
-  const { scrollY } = useScroll();
-
-  const y = useTransform(
-    scrollY,
-    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT],
-    [-160, 0]
-  );
-
+const CenterImage = ({ imageY }: { imageY: MotionValue<number> }) => {
   return (
     <motion.div
-      className="absolute bottom-[-90] z-30 w-[500px] h-[500px]"
+      className="z-30 w-[60vh] h-[60vh]"
       style={{
-        y,
+        y: imageY,
         backgroundImage: "url('/pouring-coffee.png')",
         backgroundPosition: "center",
         backgroundSize: "contain",
@@ -122,119 +144,114 @@ const CenterImage = () => {
   );
 };
 
-const ParallaxSectionLeft = () => {
-  const { scrollY } = useScroll();
+interface FeatureItemProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  xMotion: MotionValue<number>;
+}
 
-  const x1 = useTransform(scrollY, [0, SECTION_HEIGHT], [-100, 0]);
-  const x2 = useTransform(scrollY, [0, SECTION_HEIGHT], [-150, 0]);
-  const x3 = useTransform(scrollY, [0, SECTION_HEIGHT], [-200, 0]);
-  const opacity = useTransform(
-    scrollY,
-    [0.6 * SECTION_HEIGHT, SECTION_HEIGHT],
-    [0, 1]
-  );
+const FeatureItem = ({
+  icon,
+  title,
+  description,
+  xMotion,
+}: FeatureItemProps) => (
+  <motion.li className="flex items-center gap-4" style={{ x: xMotion }}>
+    <div className="text-beanlight-100 text-5xl">{icon}</div>
+    <div className="flex flex-col">
+      <p className="font-vietnam text-[1rem] tracking-tighter font-[500] text-beanlight-50">
+        {title}
+      </p>
+      <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
+        {description}
+      </p>
+    </div>
+  </motion.li>
+);
+
+const ParallaxSectionLeft = () => {
+  const { x1, x2, x3, opacity } = useParallaxItems("left", SECTION_HEIGHT);
+
+  const features = [
+    {
+      icon: <GiCoffeeBeans />,
+      title: "Premium Coffee Beans",
+      description:
+        "Crafted from the finest, ethically sourced coffee beans for a superior taste.",
+      xMotion: x1,
+    },
+    {
+      icon: <PiPlantFill />,
+      title: "Plant-Based Milk",
+      description:
+        "Delight in creamy, dairy-free options made from almond, oat, or soy milk.",
+      xMotion: x2,
+    },
+    {
+      icon: <MdNoMeetingRoom />,
+      title: "No sugar added",
+      description:
+        "Pure, natural flavors of your favorite brews without any added sugar.",
+      xMotion: x3,
+    },
+  ];
 
   return (
     <motion.div
       className="absolute top-[50%] xl:left-[8%] z-40"
-      style={{
-        opacity,
-      }}
+      style={{ opacity }}
     >
       <motion.ul className="flex flex-col gap-8 max-w-[400px]">
-        <motion.li className="flex items-center gap-4" style={{ x: x1 }}>
-          <GiCoffeeBeans className="text-beanlight-100 text-5xl" />
-          <div className="flex flex-col">
-            <p className="font-vietnam text-[1rem] tracking-tighter font-[500] text-beanlight-50">
-              Premium Coffee Beans
-            </p>
-            <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
-              Crafted from the finest, ethically sourced coffee beans for a
-              superior taste.
-            </p>
-          </div>
-        </motion.li>
-        <motion.li className="flex items-center gap-4" style={{ x: x2 }}>
-          <PiPlantFill className="text-beanlight-100 text-5xl" />
-          <div className="flex flex-col">
-            <p className="font-vietnam text-[1rem] tracking-tighter font-[500] text-beanlight-50">
-              Plant-Based Milk
-            </p>
-            <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
-              Delight in creamy, dairy-free options made from almond, oat, or
-              soy milk.
-            </p>
-          </div>
-        </motion.li>
-        <motion.li className="flex items-center gap-4" style={{ x: x3 }}>
-          <MdNoMeetingRoom className="text-beanlight-100 text-5xl" />
-          <div className="flex flex-col">
-            <p className="font-vietnam text-[1rem] tracking-tighter font-[500] text-beanlight-50">
-              No sugar added{" "}
-            </p>
-            <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
-              Pure, natural flavors of your favorite brews without any added
-              sugar.
-            </p>
-          </div>
-        </motion.li>
+        {features.map((feature, index) => (
+          <FeatureItem key={index} {...feature} />
+        ))}
       </motion.ul>
     </motion.div>
   );
 };
 
 const ParallaxSectionRight = () => {
-  const { scrollY } = useScroll();
+  const { x1, x2, x3, opacity } = useParallaxItems("right", SECTION_HEIGHT);
 
-  const x = useTransform(scrollY, [0, SECTION_HEIGHT], [130, 0]);
-  const opacity = useTransform(
-    scrollY,
-    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT * 0.8],
-    [0, 1]
-  );
   return (
-    <motion.div
-      className="absolute top-[50%] xl:right-[6%] flex flex-col items-start gap-3 z-40 max-w-[450px]"
-      style={{
-        x,
-        opacity,
-      }}
-    >
-      <h2 className="font-vietnam text-[2.2rem] font-light tracking-tight text-beanlight-50 leading-tight">
+    <div className="absolute top-[50%] xl:right-[6%] flex flex-col items-start gap-3 z-40 max-w-[450px]">
+      <motion.h2
+        className="font-vietnam text-[2.2rem] font-light tracking-tight text-beanlight-50 leading-tight"
+        style={{ x: x1, opacity }}
+      >
         Vietnamese Iced Coffee
         <br />
         with Almond Milk
-      </h2>
-      <div className="flex items-baseline gap-4 mb-2">
+      </motion.h2>
+      <motion.div
+        className="flex items-baseline gap-4 mb-2"
+        style={{ x: x2, opacity }}
+      >
         <p className="font-vietnam text-[1.25rem] font-light line-through text-beanlight-300/80">
           $13.99
         </p>
         <p className="font-vietnam text-[2.5rem] font-bold text-beanlight-50">
           $9.99
         </p>
-      </div>
-      <button
+      </motion.div>
+      <motion.button
         className="flex items-center justify-center gap-2 z-40 text-[1.75rem] font-semibold tracking-tight text-beanlight-50 group hover:text-beanlight-100 transition-colors duration-300"
         aria-label="Order now"
         tabIndex={0}
         onKeyDown={(e) =>
           e.key === "Enter" && console.log("Order button clicked")
         }
+        style={{ x: x3, opacity }}
       >
         Order now{" "}
         <FaArrowRightLong className="text-beanlight-300 transition-transform duration-300 group-hover:translate-x-2 group-hover:text-beanlight-100" />
-      </button>
-    </motion.div>
+      </motion.button>
+    </div>
   );
 };
 
-const ArrowDown = () => {
-  const { scrollY } = useScroll();
-  const opacity = useTransform(
-    scrollY,
-    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT * 0.8],
-    [1, 0]
-  );
+const ArrowDown = ({ opacity }: { opacity: MotionValue<number> }) => {
   const pulseAnimation = {
     y: [0, 6, 0],
     opacity: [1, 0.6, 1],
