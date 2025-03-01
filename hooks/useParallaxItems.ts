@@ -16,7 +16,13 @@ export const useParallaxItems = (
       ? [0.6 * sectionHeight, sectionHeight]
       : [0.4 * sectionHeight, sectionHeight * 0.8];
 
+  const wrapperOpacity = useTransform(
+    scrollY,
+    [sectionHeight * 0.8, sectionHeight],
+    [0, 1]
+  );
+
   const opacity = useTransform(scrollY, opacityRange, [0, 1]);
 
-  return { x1, x2, x3, opacity };
+  return { x1, x2, x3, opacity, wrapperOpacity };
 };
