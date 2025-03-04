@@ -37,7 +37,7 @@ export const FlyoutNav = () => {
   // If not mounted yet or screen size not determined, return a placeholder
   if (!isMounted || !isLoaded) {
     return (
-      <nav className="fixed top-0 z-50 w-full px-6 text-white transition-all duration-300 ease-out lg:px-12 bg-neutral-950/0 py-6 shadow-none opacity-0">
+      <nav className="fixed top-0 z-50 w-full px-6 text-white transition-all duration-300 ease-out lg:px-12 backdrop-blur-sm py-6 shadow-none opacity-0">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Logo />
           <div className="hidden gap-6 lg:flex">
@@ -56,11 +56,11 @@ export const FlyoutNav = () => {
       style={{
         opacity,
       }}
-      className={`fixed top-0 z-50 w-full px-6 text-white 
-      transition-all duration-300 ease-out lg:px-12 opacity-100 ${transitionClass}
+      className={`fixed top-0 z-50 w-full px-6 text-beanlight-50 
+      transition-all duration-300 ease-out lg:px-12 opacity-100 backdrop-blur-md ${transitionClass}
       ${
         scrolled
-          ? "bg-neutral-950/0 py-6 shadow-none"
+          ? "bg-neutral-950/0 py-4 shadow-none"
           : "bg-neutral-950/0 py-6 shadow-none"
       }`}
     >
