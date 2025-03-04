@@ -137,12 +137,13 @@ const Wrapper = () => {
   const imageY = useTransform(
     scrollY,
     [0.4 * SECTION_HEIGHT, SECTION_HEIGHT],
-    isMobile ? [0, -10] : [-50, -40]
+    isSuperMobile ? [0, -5] : isMobile ? [0, 18] : [-80, -70]
   );
+
   const imageScale = useTransform(
     scrollY,
-    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT],
-    isMobile ? [1, 1.2] : [1, 0.9]
+    [0, SECTION_HEIGHT],
+    isMobile ? [1.3, 1.2] : [1, 1.2]
   );
 
   // animations for the arrow down
@@ -158,7 +159,7 @@ const Wrapper = () => {
 
   return (
     <div
-      className={`relative w-full rounded-xl sticky top-24 z-10 flex flex-col items-center justify-start pt-2 
+      className={`relative w-full rounded-xl sticky top-24 z-10 flex flex-col items-center justify-start pt-2 overflow-x-clip
         ${isMobile ? "h-[120vh]" : "h-[86vh]"} 
         ${visibilityClass} ${transitionClass}`}
     >
@@ -201,15 +202,8 @@ const Wrapper = () => {
         imageScale={imageScale}
       />
 
-      <ParallaxSectionLeft classes={"hidden md:block"} />
-      <ParallaxSectionRight />
-      <div
-        className={`block md:hidden w-full flex absolute bottom-10 z-40 ${
-          isSuperMobile ? "bottom-5" : isMobile ? "bottom-[14%]" : "bottom-0"
-        }`}
-      >
-        <ParallaxSectionLeft classes={"block md:hidden"} />
-      </div>
+      <ParallaxSection />
+
       <ArrowDown opacity={opacity} />
     </div>
   );
@@ -227,7 +221,7 @@ const CenterImage = ({
   return (
     <motion.div
       className={`z-30 ${
-        isMobile ? "w-full h-[35vh] mt-4" : "w-full h-[80vh]"
+        isMobile ? "w-full h-[35vh] mt-4" : "w-full h-[145vh]"
       }`}
       style={{
         y: imageY,
@@ -241,81 +235,7 @@ const CenterImage = ({
   );
 };
 
-const ParallaxSectionLeft = ({ classes }: { classes: string }) => {
-  const { isMobile } = useScreenSize();
-  const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
-  const { x1, x2, x3, opacity } = useParallaxItems("left", SECTION_HEIGHT);
-
-  const features = [
-    {
-      icon: <GiCoffeeBeans />,
-      title: "Premium Coffee Beans",
-      description:
-        "Crafted from the finest, ethically sourced coffee beans for a superior taste.",
-      xMotion: x1,
-    },
-    {
-      icon: <PiPlantFill />,
-      title: "Plant-Based Milk",
-      description:
-        "Delight in creamy, dairy-free options made from almond, oat, or soy milk.",
-      xMotion: x2,
-    },
-    {
-      icon: <MdNoMeetingRoom />,
-      title: "No sugar added",
-      description:
-        "Pure, natural flavors of your favorite brews without any added sugar.",
-      xMotion: x3,
-    },
-  ];
-
-  return (
-    <motion.div
-      className={`absolute z-40 p-4 md:p-6 rounded-xl overflow-hidden
-        ${classes}`}
-      style={{ opacity }}
-    >
-      <motion.h3
-        className="font-vietnam text-[1.4rem] md:text-[1.6rem] font-bold tracking-tight text-beanlight-50 leading-tight mb-4
-        relative"
-      >
-        How can it be so good?
-      </motion.h3>
-
-      <motion.ul
-        className={`flex flex-col gap-6 ${
-          isMobile ? "max-w-full" : "max-w-[400px]"
-        } relative`}
-      >
-        {features.map((feature, index) => (
-          <motion.li
-            key={index}
-            className="flex items-center gap-4 relative overflow-hidden group"
-            style={{ x: feature.xMotion }}
-          >
-            <div className="absolute top-0 left-0 w-full h-full bg-beanlight-900/0 group-hover:bg-beanlight-900/10 transition-all duration-300 rounded-lg -z-10" />
-
-            <div className="text-beanlight-100 text-4xl p-2 bg-beanlight-900/10 rounded-lg">
-              {feature.icon}
-            </div>
-
-            <div className="flex flex-col">
-              <p className="font-vietnam text-[1rem] tracking-tighter font-[500] text-beanlight-50">
-                {feature.title}
-              </p>
-              <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
-                {feature.description}
-              </p>
-            </div>
-          </motion.li>
-        ))}
-      </motion.ul>
-    </motion.div>
-  );
-};
-
-const ParallaxSectionRight = () => {
+const ParallaxSection = () => {
   const { isMobile } = useScreenSize();
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
   const { x1, x2, x3, opacity, wrapperOpacity } = useParallaxItems(
@@ -325,19 +245,14 @@ const ParallaxSectionRight = () => {
 
   return (
     <motion.div
-      className={`absolute z-40 flex flex-col items-center md:items-start gap-3 p-4 md:p-6 rounded-xl overflow-hidden
-        ${
-          isMobile
-            ? "top-[45%] w-full px-4"
-            : "top-[34%] right-[3%] lg:right-[6%] max-w-[450px]"
-        }`}
+      className={`absolute z-40 top-[50%] md:left-[22%] md:top-[55%] md:-translate-x-1/2 md:-translate-y-1/2 flex flex-col items-center md:items-start gap-3 p-4 md:p-6 rounded-xl overflow-hidden`}
       style={{ opacity: wrapperOpacity }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
       <motion.h2
-        className="font-vietnam text-[1.8rem] text-center md:text-left md:text-[2.1rem] font-bold tracking-tight text-beanlight-50 leading-tight 
+        className="font-vietnam text-[1.8rem] text-center md:text-left md:text-[2rem] font-bold tracking-tight text-beanlight-50 leading-tight 
         relative md:before:content-[''] md:before:absolute md:before:-left-4 md:before:top-0 md:before:bottom-0 md:before:w-1 md:before:bg-beanlight-300/40 md:before:rounded-full"
         style={{ x: x1, opacity }}
       >
@@ -365,7 +280,7 @@ const ParallaxSectionRight = () => {
       </motion.div>
 
       <motion.button
-        className="flex items-center justify-center outline outline-2 rounded-xl outline-beanlight-500/50 px-4 hover:bg-beanlight-500/10 md:hover:bg-transparent md:px-auto md:outline-none gap-2 z-40 text-[1.5rem] md:text-[1.75rem] font-semibold tracking-tight text-beanlight-50 
+        className="flex items-center justify-center rounded-xl bg-beanlight-500 px-4 hover:bg-beanlight-500/10 md:hover:bg-transparent gap-2 z-40 text-[1.5rem] md:text-[1.75rem] font-semibold tracking-tight text-beanlight-50 
         relative py-4 group hover:text-beanlight-100"
         aria-label="Order now"
         tabIndex={0}
@@ -374,6 +289,67 @@ const ParallaxSectionRight = () => {
         Order now{" "}
         <FaArrowRightLong className="text-beanlight-300 transition-transform duration-300 group-hover:translate-x-2 group-hover:text-beanlight-100" />
       </motion.button>
+      {/* <Features /> */}
+    </motion.div>
+  );
+};
+
+const Features = () => {
+  const { isMobile } = useScreenSize();
+  const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
+  const { x1, x2, x3, opacity } = useParallaxItems("left", SECTION_HEIGHT);
+
+  const features = [
+    {
+      icon: <GiCoffeeBeans />,
+      title: "Premium Coffee Beans",
+      description:
+        "Crafted from the finest, ethically sourced coffee beans for a superior taste.",
+      xMotion: x1,
+    },
+    {
+      icon: <PiPlantFill />,
+      title: "Plant-Based Milk",
+      description:
+        "Delight in creamy, dairy-free options made from almond, oat, or soy milk.",
+      xMotion: x2,
+    },
+    {
+      icon: <MdNoMeetingRoom />,
+      title: "No sugar added",
+      description:
+        "Pure, natural flavors of your favorite brews without any added sugar.",
+      xMotion: x3,
+    },
+  ];
+  return (
+    <motion.div
+      className={`z-40 rounded-xl mt-8 opacity-30`}
+      style={{ opacity }}
+    >
+      <motion.ul
+        className={`flex flex-col gap-6 ${
+          isMobile ? "max-w-full" : "max-w-[400px]"
+        } relative`}
+      >
+        {features.map((feature, index) => (
+          <motion.li
+            key={index}
+            className="flex items-center gap-4 relative overflow-hidden group backdrop-blur-md w-full rounded-full"
+            style={{ x: feature.xMotion }}
+          >
+            <div className="text-beanlight-100 text-lg p-2 bg-beanlight-400 rounded-full">
+              {feature.icon}
+            </div>
+
+            <div className="flex flex-col">
+              <p className="font-vietnam text-sm tracking-tighter font-[500] text-beanlight-50">
+                {feature.title}
+              </p>
+            </div>
+          </motion.li>
+        ))}
+      </motion.ul>
     </motion.div>
   );
 };
