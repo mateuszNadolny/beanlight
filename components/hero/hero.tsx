@@ -14,8 +14,13 @@ import { MdNoMeetingRoom } from "react-icons/md";
 // Hook to detect screen size
 
 const SmoothScrollHero = () => {
+  const { isMobile, isSuperMobile } = useScreenSize();
   return (
-    <div className="bg-gradient-to-b from-beanlight-950 to-beanlight-1000">
+    <div
+      className={`bg-gradient-to-b from-beanlight-950 to-beanlight-1000 ${
+        isSuperMobile ? "h-[380vh]" : isMobile ? "h-[260vh]" : ""
+      }`}
+    >
       <ReactLenis
         root
         options={{
@@ -90,15 +95,14 @@ const Wrapper = () => {
     isMobile ? ["90%", "100%"] : ["30%", "100%"]
   );
 
-  // Add condition for super mobile devices (width < 360px)
   const height = useTransform(
     scrollY,
     [0, SECTION_HEIGHT],
     isSuperMobile
-      ? ["50vh", "130vh"] // Smaller height for very small screens
+      ? ["50vh", "200vh"]
       : isMobile
-      ? ["60vh", "100vh"] // Regular mobile height
-      : ["75vh", "80vh"] // Desktop height
+      ? ["60vh", "150vh"]
+      : ["75vh", "80vh"]
   );
 
   // animations for the title
@@ -149,7 +153,7 @@ const Wrapper = () => {
   // animations for the arrow down
   const opacity = useTransform(
     scrollY,
-    [0.4 * SECTION_HEIGHT, SECTION_HEIGHT * 0.8],
+    [0.7 * SECTION_HEIGHT, SECTION_HEIGHT * 0.8],
     [1, 0]
   );
 
@@ -297,7 +301,10 @@ const ParallaxSection = () => {
 const Features = () => {
   const { isMobile, isSuperMobile } = useScreenSize();
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
-  const { x1, x2, x3, opacity } = useParallaxItems("right", SECTION_HEIGHT);
+  const { x1, x2, x3, wrapperOpacity } = useParallaxItems(
+    "right",
+    SECTION_HEIGHT
+  );
 
   const features = [
     {
@@ -324,10 +331,10 @@ const Features = () => {
   ];
   return (
     <motion.div
-      className={`z-40 absolute md:-right-[10%] md:top-[55%] md:-translate-x-1/2 md:-translate-y-1/2 ${
-        isSuperMobile ? "top-[120%]" : "top-[88%]"
+      className={`z-40 absolute md:-right-[10%] md:top-[55%] md:-translate-x-1/2 md:-translate-y-1/2 px-4 ${
+        isSuperMobile ? "top-[110%]" : "top-[88%]"
       }`}
-      style={{ opacity }}
+      style={{ opacity: wrapperOpacity }}
     >
       <motion.h2 className="font-vietnam text-2xl tracking-tighter font-bold text-beanlight-50 mb-6">
         What makes it special?
@@ -343,15 +350,15 @@ const Features = () => {
             className="flex items-center gap-4 relative overflow-hidden group backdrop-blur-md w-full rounded-full"
             style={{ x: feature.xMotion }}
           >
-            <div className="text-beanlight-100 text-4xl p-2 bg-beanlight-400 rounded-full">
+            <div className="text-beanlight-100 text-2xl md:text-4xl p-2 bg-beanlight-400 rounded-full">
               {feature.icon}
             </div>
 
             <div className="flex flex-col">
-              <p className="font-vietnam text-xl tracking-tighter font-[500] text-beanlight-50">
+              <p className="font-vietnam text-lg md:text-xl tracking-tighter font-[500] text-beanlight-50">
                 {feature.title}
               </p>
-              <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
+              <p className="font-vietnam text-[12px] md:text-[14px] tracking-tighter font-thin text-beanlight-100">
                 {feature.description}
               </p>
             </div>
