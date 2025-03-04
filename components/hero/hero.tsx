@@ -203,7 +203,7 @@ const Wrapper = () => {
       />
 
       <ParallaxSection />
-
+      <Features />
       <ArrowDown opacity={opacity} />
     </div>
   );
@@ -239,7 +239,7 @@ const ParallaxSection = () => {
   const { isMobile } = useScreenSize();
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
   const { x1, x2, x3, opacity, wrapperOpacity } = useParallaxItems(
-    "right",
+    "left",
     SECTION_HEIGHT
   );
 
@@ -295,9 +295,9 @@ const ParallaxSection = () => {
 };
 
 const Features = () => {
-  const { isMobile } = useScreenSize();
+  const { isMobile, isSuperMobile } = useScreenSize();
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
-  const { x1, x2, x3, opacity } = useParallaxItems("left", SECTION_HEIGHT);
+  const { x1, x2, x3, opacity } = useParallaxItems("right", SECTION_HEIGHT);
 
   const features = [
     {
@@ -324,9 +324,14 @@ const Features = () => {
   ];
   return (
     <motion.div
-      className={`z-40 rounded-xl mt-8 opacity-30`}
+      className={`z-40 absolute md:-right-[10%] md:top-[55%] md:-translate-x-1/2 md:-translate-y-1/2 ${
+        isSuperMobile ? "top-[120%]" : "top-[88%]"
+      }`}
       style={{ opacity }}
     >
+      <motion.h2 className="font-vietnam text-2xl tracking-tighter font-bold text-beanlight-50 mb-6">
+        What makes it special?
+      </motion.h2>
       <motion.ul
         className={`flex flex-col gap-6 ${
           isMobile ? "max-w-full" : "max-w-[400px]"
@@ -338,13 +343,16 @@ const Features = () => {
             className="flex items-center gap-4 relative overflow-hidden group backdrop-blur-md w-full rounded-full"
             style={{ x: feature.xMotion }}
           >
-            <div className="text-beanlight-100 text-lg p-2 bg-beanlight-400 rounded-full">
+            <div className="text-beanlight-100 text-4xl p-2 bg-beanlight-400 rounded-full">
               {feature.icon}
             </div>
 
             <div className="flex flex-col">
-              <p className="font-vietnam text-sm tracking-tighter font-[500] text-beanlight-50">
+              <p className="font-vietnam text-xl tracking-tighter font-[500] text-beanlight-50">
                 {feature.title}
+              </p>
+              <p className="font-vietnam text-[12px] tracking-tighter font-thin text-beanlight-100">
+                {feature.description}
               </p>
             </div>
           </motion.li>
