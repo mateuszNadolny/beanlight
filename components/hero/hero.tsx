@@ -31,21 +31,27 @@ const SmoothScrollHero = () => {
   );
 };
 
-// Responsive section height
+// Update the responsive section height function to provide more space on mobile
 const getResponsiveSectionHeight = (isMobile: boolean) =>
   isMobile ? 600 : 900;
 
 const Hero = () => {
-  const { isMobile } = useScreenSize();
+  const { isMobile, isLoaded } = useScreenSize();
+  // Use a default value for the initial render to match server-side
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
+
+  // Add a CSS class to hide content until we know the screen size
+  const visibilityClass = isLoaded ? "opacity-100" : "opacity-0";
+  const transitionClass = "transition-opacity duration-300";
 
   return (
     <div
-      style={{ height: `calc(${SECTION_HEIGHT}px + 100vh)` }}
-      className="relative w-full px-4 md:px-6 lg:px-12 flex justify-center"
+      style={{
+        height: `calc(${SECTION_HEIGHT}px + ${isMobile ? "150vh" : "100vh"})`,
+      }}
+      className={`relative w-full px-4 md:px-6 lg:px-12 flex flex-col items-center ${visibilityClass} ${transitionClass}`}
     >
       <Wrapper />
-      <div className="absolute bottom-0 left-0 right-0 h-96 bg-gradient-to-b from-zinc-950/0 to-zinc-950" />
     </div>
   );
 };
@@ -64,7 +70,7 @@ const AnimatedContainer = ({
 }) => {
   return (
     <motion.div
-      className={`absolute h-[90vh] rounded-xl left-1/2 transform -translate-x-1/2 ${className}`}
+      className={`absolute rounded-xl left-1/2 transform -translate-x-1/2 ${className}`}
       style={{ width, height }}
     >
       {children}
@@ -74,33 +80,38 @@ const AnimatedContainer = ({
 
 const Wrapper = () => {
   const { scrollY } = useScroll();
-  const { isMobile } = useScreenSize();
+  const { isMobile, isSuperMobile, isLoaded } = useScreenSize();
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
 
-  // Responsive animation values
+  // Responsive animation values for animated containers
   const width = useTransform(
     scrollY,
     [0, SECTION_HEIGHT],
     isMobile ? ["90%", "100%"] : ["30%", "100%"]
   );
 
+  // Add condition for super mobile devices (width < 360px)
   const height = useTransform(
     scrollY,
     [0, SECTION_HEIGHT],
-    isMobile ? ["60vh", "70vh"] : ["75vh", "80vh"]
+    isSuperMobile
+      ? ["50vh", "130vh"] // Smaller height for very small screens
+      : isMobile
+      ? ["60vh", "100vh"] // Regular mobile height
+      : ["75vh", "80vh"] // Desktop height
   );
 
   // animations for the title
   const titleY = useTransform(
     scrollY,
     [0, SECTION_HEIGHT],
-    isMobile ? [-50, 0] : [-100, 0]
+    isMobile ? [-50, 20] : [-100, 0]
   );
 
   const fontSize = useTransform(
     scrollY,
     [0, SECTION_HEIGHT],
-    isMobile ? ["1.5rem", "2rem"] : ["4rem", "7rem"]
+    isMobile ? ["1.7rem", "1.8rem"] : ["4rem", "7rem"]
   );
 
   const textShadow = useTransform(
@@ -109,16 +120,29 @@ const Wrapper = () => {
     ["0px 0px 0px 0px rgba(0, 0, 0, 0)", "0px 0px 10px 0px rgba(0, 0, 0, 0.5)"]
   );
 
+  // animations for the second title
+  const fontSize2 = useTransform(
+    scrollY,
+    [0, SECTION_HEIGHT],
+    isMobile ? ["1.2rem", "1.3rem"] : ["2.5rem", "3rem"]
+  );
+
+  const textOpacity = useTransform(
+    scrollY,
+    [0, SECTION_HEIGHT],
+    isMobile ? [1, 0] : [1, 0]
+  );
+
   // animations for the center image
   const imageY = useTransform(
     scrollY,
     [0.4 * SECTION_HEIGHT, SECTION_HEIGHT],
-    isMobile ? [-5, 0] : [-50, -40]
+    isMobile ? [0, -10] : [-50, -40]
   );
   const imageScale = useTransform(
     scrollY,
     [0.4 * SECTION_HEIGHT, SECTION_HEIGHT],
-    isMobile ? [1, 0.5] : [1, 0.9]
+    isMobile ? [1, 1.2] : [1, 0.9]
   );
 
   // animations for the arrow down
@@ -128,8 +152,16 @@ const Wrapper = () => {
     [1, 0]
   );
 
+  // Add a CSS class to ensure smooth transition when screen size is determined
+  const visibilityClass = isLoaded ? "opacity-100" : "opacity-0";
+  const transitionClass = "transition-opacity duration-300";
+
   return (
-    <div className="relative w-full h-[86vh] rounded-xl sticky top-24 z-10 flex flex-col items-center justify-start pt-2">
+    <div
+      className={`relative w-full rounded-xl sticky top-24 z-10 flex flex-col items-center justify-start pt-2 
+        ${isMobile ? "h-[120vh]" : "h-[86vh]"} 
+        ${visibilityClass} ${transitionClass}`}
+    >
       <AnimatedContainer
         className="z-10 bg-beanlight-900"
         width={width}
@@ -147,11 +179,21 @@ const Wrapper = () => {
       />
 
       <motion.h1
-        className="font-hedvig text-[#E2EAE1] tracking-tight z-30 font-[400] text-center mb-4"
+        className={`font-hedvig text-[#E2EAE1] tracking-tight z-30 font-[400] text-center ${
+          isMobile ? "mb-2" : "mb-4"
+        }`}
         style={{ y: titleY, textShadow, fontSize }}
       >
         Brewed to perfection
       </motion.h1>
+      <motion.h2
+        className={`font-hedvig text-[#E2EAE1] tracking-tight z-30 font-[400] text-center ${
+          isMobile ? "mb-2" : "mb-4"
+        }`}
+        style={{ y: titleY, fontSize: fontSize2, opacity: textOpacity }}
+      >
+        and has its own story
+      </motion.h2>
 
       <CenterImage
         imageY={imageY}
@@ -159,9 +201,15 @@ const Wrapper = () => {
         imageScale={imageScale}
       />
 
-      <ParallaxSectionLeft />
+      <ParallaxSectionLeft classes={"hidden md:block"} />
       <ParallaxSectionRight />
-
+      <div
+        className={`block md:hidden w-full flex absolute bottom-10 z-40 ${
+          isSuperMobile ? "bottom-5" : isMobile ? "bottom-[14%]" : "bottom-0"
+        }`}
+      >
+        <ParallaxSectionLeft classes={"block md:hidden"} />
+      </div>
       <ArrowDown opacity={opacity} />
     </div>
   );
@@ -178,7 +226,9 @@ const CenterImage = ({
 }) => {
   return (
     <motion.div
-      className={`z-30 ${isMobile ? "w-full h-[50vh]" : "w-full h-[80vh]"}`}
+      className={`z-30 ${
+        isMobile ? "w-full h-[35vh] mt-4" : "w-full h-[80vh]"
+      }`}
       style={{
         y: imageY,
         backgroundImage: "url('/pouring-coffee.png')",
@@ -191,7 +241,7 @@ const CenterImage = ({
   );
 };
 
-const ParallaxSectionLeft = () => {
+const ParallaxSectionLeft = ({ classes }: { classes: string }) => {
   const { isMobile } = useScreenSize();
   const SECTION_HEIGHT = getResponsiveSectionHeight(isMobile);
   const { x1, x2, x3, opacity } = useParallaxItems("left", SECTION_HEIGHT);
@@ -222,20 +272,22 @@ const ParallaxSectionLeft = () => {
 
   return (
     <motion.div
-      className="absolute top-[35%] md:left-[5%] lg:left-[8%] z-40 
-      p-4 md:p-6 backdrop-blur-sm rounded-xl overflow-hidden "
+      className={`absolute z-40 p-4 md:p-6 rounded-xl overflow-hidden
+        ${classes}`}
       style={{ opacity }}
     >
-      <motion.div className="absolute -top-10 -right-10 w-24 h-24 bg-geometric-pattern opacity-20 rounded-full" />
-
       <motion.h3
-        className="font-vietnam text-[1.4rem] md:text-[1.6rem] font-bold tracking-tight text-beanlight-50 leading-tight  mb-4
+        className="font-vietnam text-[1.4rem] md:text-[1.6rem] font-bold tracking-tight text-beanlight-50 leading-tight mb-4
         relative"
       >
-        Why is it so good?
+        How can it be so good?
       </motion.h3>
 
-      <motion.ul className="flex flex-col gap-6 max-w-[400px] relative">
+      <motion.ul
+        className={`flex flex-col gap-6 ${
+          isMobile ? "max-w-full" : "max-w-[400px]"
+        } relative`}
+      >
         {features.map((feature, index) => (
           <motion.li
             key={index}
@@ -259,13 +311,6 @@ const ParallaxSectionLeft = () => {
           </motion.li>
         ))}
       </motion.ul>
-
-      <motion.div
-        className="w-full h-[1px] bg-gradient-to-r from-transparent via-beanlight-300/30 to-transparent mt-4"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ delay: 0.3, duration: 0.8 }}
-      />
     </motion.div>
   );
 };
@@ -280,16 +325,20 @@ const ParallaxSectionRight = () => {
 
   return (
     <motion.div
-      className="absolute top-[34%] md:right-[3%] lg:right-[6%] flex flex-col items-start gap-3 z-40 max-w-[450px]
-      p-4 md:p-6 backdrop-blur-sm rounded-xl overflow-hidden"
+      className={`absolute z-40 flex flex-col items-center md:items-start gap-3 p-4 md:p-6 rounded-xl overflow-hidden
+        ${
+          isMobile
+            ? "top-[45%] w-full px-4"
+            : "top-[34%] right-[3%] lg:right-[6%] max-w-[450px]"
+        }`}
       style={{ opacity: wrapperOpacity }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
       <motion.h2
-        className="font-vietnam text-[1.8rem] md:text-[2.1rem] font-bold tracking-tight text-beanlight-50 leading-tight 
-        relative before:content-[''] before:absolute before:-left-4 before:top-0 before:bottom-0 before:w-1 before:bg-beanlight-300/40 before:rounded-full"
+        className="font-vietnam text-[1.8rem] text-center md:text-left md:text-[2.1rem] font-bold tracking-tight text-beanlight-50 leading-tight 
+        relative md:before:content-[''] md:before:absolute md:before:-left-4 md:before:top-0 md:before:bottom-0 md:before:w-1 md:before:bg-beanlight-300/40 md:before:rounded-full"
         style={{ x: x1, opacity }}
       >
         Vietnamese Iced Coffee
@@ -301,7 +350,7 @@ const ParallaxSectionRight = () => {
       </motion.h2>
 
       <motion.div
-        className="flex items-baseline gap-4 mb-2 relative"
+        className="flex items-baseline gap-2 md:gap-4 mb-2 relative"
         style={{ x: x2, opacity }}
       >
         <p className="font-vietnam text-[1.1rem] md:text-[1.25rem] font-light line-through text-beanlight-300/80">
@@ -316,7 +365,7 @@ const ParallaxSectionRight = () => {
       </motion.div>
 
       <motion.button
-        className="flex items-center justify-center gap-2 z-40 text-[1.5rem] md:text-[1.75rem] font-semibold tracking-tight text-beanlight-50 
+        className="flex items-center justify-center outline outline-2 rounded-xl outline-beanlight-500/50 px-4 hover:bg-beanlight-500/10 md:hover:bg-transparent md:px-auto md:outline-none gap-2 z-40 text-[1.5rem] md:text-[1.75rem] font-semibold tracking-tight text-beanlight-50 
         relative py-4 group hover:text-beanlight-100"
         aria-label="Order now"
         tabIndex={0}
@@ -330,6 +379,7 @@ const ParallaxSectionRight = () => {
 };
 
 const ArrowDown = ({ opacity }: { opacity: MotionValue<number> }) => {
+  const { isMobile } = useScreenSize();
   const pulseAnimation = {
     y: [0, 6, 0],
     transition: {
@@ -340,7 +390,8 @@ const ArrowDown = ({ opacity }: { opacity: MotionValue<number> }) => {
   };
   return (
     <motion.div
-      className="absolute bottom-0 flex flex-col w-full items-center justify-center"
+      className={`absolute flex flex-col w-full items-center justify-center
+        ${isMobile ? "bottom-[35%]" : "bottom-0"}`}
       style={{
         opacity,
       }}
@@ -348,7 +399,7 @@ const ArrowDown = ({ opacity }: { opacity: MotionValue<number> }) => {
     >
       <IoIosArrowRoundDown className="text-beanlight-600 text-2xl" />
       <p className="font-vietnam text-[.625rem] font-light tracking-tight text-beanlight-600">
-        and has its own story
+        Swipe to see more
       </p>
     </motion.div>
   );
